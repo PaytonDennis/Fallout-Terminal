@@ -11,6 +11,6 @@ public class ApiController {
     @GetMapping("/message")
     public String getOopMessage() {
         DisplayMessage practice = new DisplayMessage();
-        return practice.getMainMessage() + practice.displayMessage();
+        return practice.getMainMessage();
     }
 }
