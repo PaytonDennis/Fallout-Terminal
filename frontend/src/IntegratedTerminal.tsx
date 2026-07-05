@@ -2,12 +2,13 @@
 import { useEffect, useRef, useState } from "react";
 import terminalVideo from "./assets/terminal.mp4";
 import TypingText from "./TypingText";
+import vaultBoySticker from "./assets/Fallout Vault Dweller Sticker by Amazon Prime Video.gif";
 
 type Box = { left: number; top: number; width: number; height: number };
-type Screen = "main" | "help" | "status";
+type Screen = "main" | "help" | "status" | "vault boy";
 
 const HELP_TEXT =
-  "Available commands:\n  help - show this screen\n  status - show the backend message\n  back - return to the terminal";
+  "Available commands:\n  help - show this screen\n  status - backend test \n  back - return to the terminal \n vault boy - displays the vault boy";
 
 function IntegratedTerminal() {
   const [oopMessage, setOopMessage] = useState("Loading...");
@@ -90,6 +91,7 @@ function IntegratedTerminal() {
     status: () => setScreen("status"),
     back: () => setScreen("main"),
     exit: () => setScreen("main"),
+    "vault boy": () => setScreen("vault boy"),
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -162,9 +164,10 @@ function IntegratedTerminal() {
               of the frame). */}
           <div
             ref={scrollRef}
+            className="terminal-scroll"
             style={{
               position: "absolute",
-              top: videoBox.top + videoBox.height * 0.183,
+              top: videoBox.top + videoBox.height * 0.192,
               left: videoBox.left + videoBox.width * 0.365,
               width: videoBox.width * 0.24,
               maxHeight: videoBox.height * 0.35,
@@ -172,13 +175,20 @@ function IntegratedTerminal() {
               overflowX: "hidden",
               color: "#00ff00",
               fontFamily: "monospace",
-              fontSize: `${videoBox.width * 0.022}px`,
+              fontSize: `${videoBox.width * 0.015}px`,
               whiteSpace: "pre-wrap",
               overflowWrap: "break-word",
             }}
           >
             {screen === "help" && <TypingText text={HELP_TEXT} />}
             {screen === "status" && <TypingText text={`>${oopMessage}`} />}
+            {screen === "vault boy" && (
+              <img
+                src={vaultBoySticker}
+                alt="Vault Boy"
+                style={{ width: "60%" }}
+              />
+            )}
 
             {notice && <p>{notice}</p>}
 
@@ -223,6 +233,20 @@ function IntegratedTerminal() {
         {`
           @keyframes blink {
             50% { opacity: 0; }
+          }
+          .terminal-scroll {
+            scrollbar-width: thin;
+            scrollbar-color: #00ff00 transparent;
+          }
+          .terminal-scroll::-webkit-scrollbar {
+            width: 6px;
+          }
+          .terminal-scroll::-webkit-scrollbar-track {
+            background: transparent;
+          }
+          .terminal-scroll::-webkit-scrollbar-thumb {
+            background-color: #00ff00;
+            border-radius: 3px;
           }
         `}
       </style>
