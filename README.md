@@ -1,4 +1,4 @@
-This is A Fallout-style interactive terminal — React frontend + Spring Boot backend.
+This is A Fallout-style interactive terminal — React frontend + Spring Boot backend and unit tesing with Junit.
 
 Backend: (Java 17 / Spring Boot): ApiController exposes GET /api/message, returning text built from DisplayMessage. WebConfig handles CORS so the frontend can call it.
 
