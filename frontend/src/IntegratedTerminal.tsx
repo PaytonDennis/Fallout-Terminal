@@ -3,12 +3,20 @@ import { useEffect, useRef, useState } from "react";
 import terminalVideo from "./assets/terminal.mp4";
 import TypingText from "./TypingText";
 import vaultBoySticker from "./assets/Fallout Vault Dweller Sticker by Amazon Prime Video.gif";
+import VaultDwellerList from "./VaultDwellerList";
+import FoodStorageList from "./FoodStorageList";
 
 type Box = { left: number; top: number; width: number; height: number };
-type Screen = "main" | "help" | "status" | "vault boy";
+type Screen =
+  | "main"
+  | "help"
+  | "status"
+  | "vault boy"
+  | "dwellers"
+  | "food storage";
 
 const HELP_TEXT =
-  "Available commands:\n  help - show this screen\n  status - backend test \n  back - return to the terminal \n vault boy - displays the vault boy";
+  "Available commands:\n  help - show this screen\n  status - backend test \n  back - return to the terminal \n vault boy - displays the vault boy \n dwellers - Displays the Vault Dwellers Database \n food storage - shows food storage";
 
 function IntegratedTerminal() {
   const [oopMessage, setOopMessage] = useState("Loading...");
@@ -92,6 +100,8 @@ function IntegratedTerminal() {
     back: () => setScreen("main"),
     exit: () => setScreen("main"),
     "vault boy": () => setScreen("vault boy"),
+    dwellers: () => setScreen("dwellers"),
+    "food storage": () => setScreen("food storage"),
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -176,6 +186,8 @@ function IntegratedTerminal() {
           >
             {screen === "help" && <TypingText text={HELP_TEXT} />}
             {screen === "status" && <TypingText text={`>${oopMessage}`} />}
+            {screen === "dwellers" && <VaultDwellerList />}
+            {screen === "food storage" && <FoodStorageList />}
             {screen === "vault boy" && (
               <img
                 src={vaultBoySticker}
