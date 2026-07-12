@@ -165,6 +165,18 @@ function IntegratedTerminal() {
             }}
           ></div>
 
+          <div
+            style={{
+              position: "absolute",
+              top: videoBox.top,
+              left: videoBox.left,
+              width: videoBox.width * 0.02,
+              height: videoBox.height * 0.01,
+              backgroundColor: "black",
+              zIndex: 1,
+            }}
+          />
+
           {/* handling user inputs */}
           <div
             ref={scrollRef}
