@@ -8,7 +8,9 @@ Flow: page loads → video renders → fetch hits /api/message → response gets
 
 Run: backend && ./mvnw spring-boot:run (port 8080), frontend && npm run dev (port 5173).
 
-Commands: Help, Back, Exit, Vault boy, Test
+Commands: Help, Back, Exit, Vault boy, Test, Dwellers, Food Storage
+
+there is an online deployment here: https://working-fallout-terminal.vercel.app/
 
 
 <img width="1615" height="892" alt="falloutterminal" src="https://github.com/user-attachments/assets/d96642c0-37d2-4ea4-ba34-bcac92923b15" />
