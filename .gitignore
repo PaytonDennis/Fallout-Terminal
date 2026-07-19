@@ -3,3 +3,4 @@
 .vscode/
 *.suo
 .DS_Store
+application.properties
