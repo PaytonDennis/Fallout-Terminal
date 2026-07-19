@@ -5,6 +5,7 @@ import TypingText from "./TypingText";
 import vaultBoySticker from "./assets/Fallout Vault Dweller Sticker by Amazon Prime Video.gif";
 import VaultDwellerList from "./VaultDwellerList";
 import FoodStorageList from "./FoodStorageList";
+import { API_URL } from "./config";
 
 type Box = { left: number; top: number; width: number; height: number };
 type Screen =
@@ -46,7 +47,7 @@ function IntegratedTerminal() {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetch("http://localhost:8080/api/message")
+    fetch(`${API_URL}/api/message`)
       .then((res) => res.text())
       .then((msg) => setOopMessage(msg))
       .catch(() => setOopMessage("Error fetching message"));
@@ -159,7 +160,7 @@ function IntegratedTerminal() {
       setHistory((prev) => [...prev, `> ${value}`, "Saving..."]);
       setAddDwellerStep("idle");
 
-      fetch("http://localhost:8080/api/dwellers", {
+      fetch(`${API_URL}/api/dwellers`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

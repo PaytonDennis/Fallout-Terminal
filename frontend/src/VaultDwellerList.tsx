@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
+import { API_URL } from "./config";
 
 function VaultDwellerList() {
   const [dwellers, setDwellers] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:8080/api/dwellers")
+    fetch(`${API_URL}/api/dwellers`)
       .then((res) => res.json())
       .then((msg) => setDwellers(msg))
       .catch(() => console.error("Error fetching dwellers"));
