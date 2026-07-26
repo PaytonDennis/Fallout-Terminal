@@ -15,7 +15,7 @@ function FoodStorageList() {
     <div>
       {food.map((d: any) => (
         <p key={d.id}>
-          {d.name} - {d.amount}
+          {d.name} - {d.type} - {d.expirationDate}
         </p>
       ))}
     </div>

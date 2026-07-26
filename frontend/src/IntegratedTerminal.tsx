@@ -15,10 +15,13 @@ type Screen =
   | "vault boy"
   | "dwellers"
   | "food storage"
-  | "add dweller";
+  | "add dweller"
+  | "add food"
+  | "remove dweller"
+  | "remove food";
 
 const HELP_TEXT =
-  "Available commands:\n  help - show this screen\n  status - backend test \n  back - return to the terminal \n vault boy - displays the vault boy \n dwellers - Displays the Vault Dwellers Database \n food storage - shows food storage \n Add dweller - Add a new Vault dweller to the database";
+  "Available commands:\n  help - show this screen\n  status - backend test \n  back - return to the terminal \n vault boy - displays the vault boy \n dwellers - Displays the Vault Dwellers Database \n food storage - shows food storage \n Add dweller - Add a new Vault dweller to the database \n Add food - Add a new food storage item to the database \n Remove dweller - Remove a Vault dweller from the database by name \n Remove food - Remove a food storage item from the database by name";
 
 function IntegratedTerminal() {
   const [oopMessage, setOopMessage] = useState("Loading...");
@@ -39,6 +42,17 @@ function IntegratedTerminal() {
     age: "",
     occupation: "",
   });
+  const [addFoodStep, setAddFoodStep] = useState<
+    "idle" | "name" | "type" | "expirationDate"
+  >("idle");
+  const [newFood, setNewFood] = useState({
+    name: "",
+    type: "",
+    expirationDate: "",
+  });
+  const [removeStep, setRemoveStep] = useState<"idle" | "dweller" | "food">(
+    "idle"
+  );
   const [history, setHistory] = useState<string[]>([]);
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -119,20 +133,51 @@ function IntegratedTerminal() {
       setAddDwellerStep("name");
       setHistory(["Dweller name:"]);
     },
+    "add food": () => {
+      setScreen("add food");
+      setAddFoodStep("name");
+      setHistory(["Food name:"]);
+    },
+    "remove dweller": () => {
+      setScreen("remove dweller");
+      setRemoveStep("dweller");
+      setHistory(["Dweller name to remove:"]);
+    },
+    "remove food": () => {
+      setScreen("remove food");
+      setRemoveStep("food");
+      setHistory(["Food name to remove:"]);
+    },
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const value = input.trim();
     setInput("");
-    if (!value) return;
 
-    // Allow bailing out of the add-dweller flow at any step
-    if (addDwellerStep !== "idle") {
+    const inFlow =
+      addDwellerStep !== "idle" ||
+      addFoodStep !== "idle" ||
+      removeStep !== "idle";
+
+    if (!value) {
+      // Outside a flow, an empty command is just ignored. Mid-flow, a blank
+      // answer would silently corrupt the record being built, so ask again.
+      if (inFlow) {
+        setHistory((prev) => [...prev, "Please enter a value."]);
+      }
+      return;
+    }
+
+    // Allow bailing out of the add-dweller/add-food/remove flows at any step
+    if (inFlow) {
       const lower = value.toLowerCase();
       if (lower === "back" || lower === "exit") {
         setAddDwellerStep("idle");
+        setAddFoodStep("idle");
+        setRemoveStep("idle");
         setNewDweller({ name: "", age: "", occupation: "" });
+        setNewFood({ name: "", type: "", expirationDate: "" });
         setHistory([]);
         setNotice(null);
         setScreen("main");
@@ -149,6 +194,15 @@ function IntegratedTerminal() {
     }
 
     if (addDwellerStep === "age") {
+      if (!/^\d+$/.test(value)) {
+        setHistory((prev) => [
+          ...prev,
+          `> ${value}`,
+          "Invalid age. Please enter a whole number:",
+        ]);
+        return;
+      }
+
       setNewDweller((prev) => ({ ...prev, age: value }));
       setHistory((prev) => [...prev, `> ${value}`, "Dweller occupation:"]);
       setAddDwellerStep("occupation");
@@ -180,7 +234,124 @@ function IntegratedTerminal() {
       return;
     }
 
-    // Normal command handling (only runs when NOT mid-add-dweller-flow)
+    // If we're mid-way through adding a food item, capture the answer
+    if (addFoodStep === "name") {
+      setNewFood((prev) => ({ ...prev, name: value }));
+      setHistory((prev) => [...prev, `> ${value}`, "Food type:"]);
+      setAddFoodStep("type");
+      return;
+    }
+
+    if (addFoodStep === "type") {
+      setNewFood((prev) => ({ ...prev, type: value }));
+      setHistory((prev) => [
+        ...prev,
+        `> ${value}`,
+        "Expiration date (YYYY-MM-DD):",
+      ]);
+      setAddFoodStep("expirationDate");
+      return;
+    }
+
+    if (addFoodStep === "expirationDate") {
+      const isValidDate =
+        /^\d{4}-\d{2}-\d{2}$/.test(value) && !isNaN(Date.parse(value));
+      if (!isValidDate) {
+        setHistory((prev) => [
+          ...prev,
+          `> ${value}`,
+          "Invalid date. Please enter as YYYY-MM-DD:",
+        ]);
+        return;
+      }
+
+      const finalFood = { ...newFood, expirationDate: value };
+      setHistory((prev) => [...prev, `> ${value}`, "Saving..."]);
+      setAddFoodStep("idle");
+
+      fetch(`${API_URL}/api/food`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: finalFood.name,
+          type: finalFood.type,
+          expirationDate: finalFood.expirationDate,
+        }),
+      })
+        .then((res) => res.json())
+        .then(() => {
+          setHistory((prev) => [...prev, "Food item saved successfully."]);
+          setNewFood({ name: "", type: "", expirationDate: "" });
+        })
+        .catch(() => {
+          setHistory((prev) => [...prev, "Error saving food item."]);
+        });
+      return;
+    }
+
+    // Remove a dweller by name
+    if (removeStep === "dweller") {
+      const name = value;
+      setHistory((prev) => [...prev, `> ${name}`, "Searching..."]);
+      setRemoveStep("idle");
+
+      fetch(`${API_URL}/api/dwellers`)
+        .then((res) => res.json())
+        .then((list) => {
+          const match = list.find(
+            (d: any) => d.name.toLowerCase() === name.toLowerCase()
+          );
+          if (!match) {
+            setHistory((prev) => [
+              ...prev,
+              `No dweller named "${name}" found.`,
+            ]);
+            return;
+          }
+          return fetch(`${API_URL}/api/dwellers/${match.id}`, {
+            method: "DELETE",
+          }).then(() => {
+            setHistory((prev) => [...prev, `${match.name} removed.`]);
+          });
+        })
+        .catch(() => {
+          setHistory((prev) => [...prev, "Error removing dweller."]);
+        });
+      return;
+    }
+
+    // Remove a food item by name
+    if (removeStep === "food") {
+      const name = value;
+      setHistory((prev) => [...prev, `> ${name}`, "Searching..."]);
+      setRemoveStep("idle");
+
+      fetch(`${API_URL}/api/food`)
+        .then((res) => res.json())
+        .then((list) => {
+          const match = list.find(
+            (d: any) => d.name.toLowerCase() === name.toLowerCase()
+          );
+          if (!match) {
+            setHistory((prev) => [
+              ...prev,
+              `No food item named "${name}" found.`,
+            ]);
+            return;
+          }
+          return fetch(`${API_URL}/api/food/${match.id}`, {
+            method: "DELETE",
+          }).then(() => {
+            setHistory((prev) => [...prev, `${match.name} removed.`]);
+          });
+        })
+        .catch(() => {
+          setHistory((prev) => [...prev, "Error removing food item."]);
+        });
+      return;
+    }
+
+    // Normal command handling (only runs when NOT mid-add-dweller/add-food/remove flow)
     const command = value.toLowerCase();
     const run = commands[command];
     if (run) {
@@ -281,7 +452,10 @@ function IntegratedTerminal() {
               />
             )}
 
-            {screen === "add dweller" &&
+            {(screen === "add dweller" ||
+              screen === "add food" ||
+              screen === "remove dweller" ||
+              screen === "remove food") &&
               history.map((line, i) => (
                 <p key={i} style={{ textAlign: "left" }}>
                   {line}
