@@ -1,4 +1,4 @@
-This is a Fallout-style interactive terminal — React frontend + Spring Boot backend, deployed on AWS with a PostgreSQL database. Backend tested with JUnit and Mockito (mocking the database layer); frontend tested with Vitest and React Testing Library.
+This is an end-to-end Fallout-style interactive terminal — React frontend + Spring Boot backend, deployed on AWS with a PostgreSQL database. Backend tested with JUnit and Mockito (mocking the database layer); frontend tested with Vitest and React Testing Library.
 
 Backend: (Java 17 / Spring Boot): ApiController exposes GET /api/message. VaultDwellerController and FoodStorageController provide full CRUD (GET/POST/PUT/DELETE) for vault dwellers and food storage items, backed by JPA repositories against a PostgreSQL database on AWS RDS. WebConfig handles CORS for the deployed frontend origin. Deployed on an AWS EC2 instance, fronted by Caddy as a reverse proxy for automatic HTTPS
 
