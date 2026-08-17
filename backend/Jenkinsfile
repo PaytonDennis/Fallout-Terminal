@@ -1,0 +1,38 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Build') {
+            steps {
+                dir('backend') {
+                    sh './mvnw clean package -DskipTests'
+                }
+            }
+        }
+
+        stage('Test') {
+            steps {
+                dir('backend') {
+                    sh './mvnw test'
+                }
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                dir('backend') {
+                    sh 'docker build -t fallout-terminal-backend .'
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Build, tests, and Docker image build succeeded!'
+        }
+        failure {
+            echo 'Something failed — check the stage logs above.'
+        }
+    }
+}
